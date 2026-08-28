@@ -271,6 +271,7 @@ let guesses = [];
 let pollTimer = null;
 let advancedForRound = -1;
 let endedForRound = -1;
+let pickedForRound = -1;
 let currentStroke = null;
 let brushColor = '#000000';
 let drawing = false;
@@ -503,7 +504,7 @@ document.getElementById('leaveGameBtn').addEventListener('click', resetToLanding
 function resetToLanding(){
   if(pollTimer) clearInterval(pollTimer);
   room=''; meta=null; players=[]; strokes=[]; guesses=[];
-  advancedForRound=-1; endedForRound=-1;
+  advancedForRound=-1; endedForRound=-1; pickedForRound=-1;
   showScreen('screen-landing');
 }
 
@@ -608,7 +609,13 @@ function renderPicking(myTurn){
   document.getElementById('pick-waiting').classList.toggle('hidden', isMe);
   if(!isMe){
     document.getElementById('waitingText').innerHTML = `Waiting for ${drawerBadgeName()} to pick a card...`;
-  } else {
+    pickedForRound = -1; // not our turn (yet) — clear so our next turn shows the deck again
+  } else if(pickedForRound !== meta.roundNumber){
+    // Only (re)show the unpicked deck if we haven't already revealed a card
+    // this round. Without this check, the poll tick every 2s would stomp
+    // the local card reveal back to the deck while the player is still
+    // deciding whether to hit "Start Drawing" — the reveal was never saved
+    // to the server, so every render pass here would otherwise re-hide it.
     document.getElementById('cardReveal').classList.add('hidden');
     document.getElementById('startDrawingBtn').classList.add('hidden');
     document.getElementById('deckCard').style.display='flex';
@@ -619,6 +626,7 @@ document.getElementById('deckCard').addEventListener('click', ()=>{
   cardCategory = cats[Math.floor(Math.random()*cats.length)];
   const words = CATEGORIES[cardCategory];
   cardWord = words[Math.floor(Math.random()*words.length)];
+  pickedForRound = meta.roundNumber;
   document.getElementById('cardReveal').textContent = `${cardCategory}: ${cardWord.toUpperCase()}`;
   document.getElementById('cardReveal').classList.remove('hidden');
   document.getElementById('startDrawingBtn').classList.remove('hidden');
