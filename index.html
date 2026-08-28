@@ -133,7 +133,7 @@
       <label id="lobbyCodeLabel">Room code — share this</label>
       <div class="room-code small" id="lobbyCode" aria-labelledby="lobbyCodeLabel">----</div>
       <button type="button" class="btn outline" id="copyCodeBtn">📋 Copy Code</button>
-      <button type="button" class="btn mint" id="copyLinkBtn">🔗 Copy Join Link (easiest)</button>
+      <button type="button" class="btn mint" id="copyLinkBtn">📤 Send Join Link</button>
       <div class="players" id="lobbyPlayers" aria-live="polite"></div>
       <button type="button" class="btn mint" id="startGameBtn">▶️ Start Game</button>
       <div class="hint">Need at least 2 players. Everyone should join before you start — turn order locks in then.</div>
@@ -472,6 +472,20 @@ document.getElementById('copyLinkBtn').addEventListener('click', async function(
   const btn = this;
   const original = btn.textContent;
   const link = buildJoinLink();
+
+  // Prefer the native share sheet (Messages, WhatsApp, Mail, etc.) where
+  // available — mainly mobile browsers. Falls back to clipboard-copy
+  // everywhere else (most desktop browsers don't support navigator.share).
+  if(navigator.share){
+    try{
+      await navigator.share({ title:'Sketch Showdown', text:`Join my Sketch Showdown room! Room code: ${room}`, url:link });
+      return; // player picked an app (or backgrounded the sheet) — nothing left to do
+    }catch(e){
+      if(e && e.name==='AbortError') return; // they cancelled the share sheet, not an error
+      // otherwise fall through to the clipboard fallback below
+    }
+  }
+
   try{
     if(!navigator.clipboard || !navigator.clipboard.writeText){
       throw new Error('Clipboard API unavailable');
