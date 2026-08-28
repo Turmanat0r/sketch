@@ -275,13 +275,14 @@ let currentStroke = null;
 let brushColor = '#000000';
 let drawing = false;
 
-// ============== STORAGE (free public key-value store — no Claude account needed) ==============
-// NOTE ON TRUST MODEL: kvdb.io is a public, unauthenticated store — anyone who
-// has the room code can read or write that room's data (including peeking at
-// the current word). That's an accepted trade-off for a zero-backend,
-// no-signup party game; don't reuse this room-code pattern for anything that
-// needs real access control.
-const KVDB_BASE = 'https://kvdb.io';
+// ============== STORAGE (our own serverless API, backed by a private Redis store) ==============
+// Room state lives behind /api/room (see api/room.js) instead of a public
+// third-party service — the store's credentials never reach the browser,
+// room codes/keys are validated server-side, and idle rooms expire on their
+// own. Access control is still just "knowing the room code" (same model as
+// before) — that's an accepted trade-off for a zero-login party game; don't
+// reuse this room-code pattern for anything that needs real access control.
+const API_BASE = '/api/room';
 let connOk = true;
 
 /**
@@ -302,15 +303,11 @@ function setConnStatus(ok){
  * @throws {Error} if the store is unreachable or returns no id
  */
 async function createRoom(){
-  const res = await fetch(`${KVDB_BASE}/`, {
-    method:'POST',
-    headers:{'Content-Type':'application/x-www-form-urlencoded'},
-    body:'email=guest@sketchshowdown.app'
-  });
+  const res = await fetch(`${API_BASE}?action=create`, {method:'POST'});
   if(!res.ok) throw new Error('create failed: HTTP '+res.status);
-  const id = (await res.text()).trim();
-  if(!id) throw new Error('room service returned an empty id');
-  return id;
+  const data = await res.json();
+  if(!data || !data.room) throw new Error('room service returned an empty id');
+  return data.room;
 }
 
 /**
@@ -321,7 +318,7 @@ async function createRoom(){
  */
 async function checkRoomExists(code){
   try{
-    const res = await fetch(`${KVDB_BASE}/${encodeURIComponent(code)}/players`);
+    const res = await fetch(`${API_BASE}?room=${encodeURIComponent(code)}&key=players`);
     if(res.status===404) return {exists:false, networkError:false};
     return {exists: res.ok, networkError: !res.ok};
   }catch(e){
@@ -336,7 +333,7 @@ async function checkRoomExists(code){
  */
 async function loadJSON(key){
   try{
-    const res = await fetch(`${KVDB_BASE}/${encodeURIComponent(room)}/${encodeURIComponent(key)}`);
+    const res = await fetch(`${API_BASE}?room=${encodeURIComponent(room)}&key=${encodeURIComponent(key)}`);
     if(res.status===404){ setConnStatus(true); return null; }
     if(!res.ok){ setConnStatus(false); return null; }
     const text = await res.text();
@@ -353,7 +350,7 @@ async function loadJSON(key){
  */
 async function saveJSON(key, obj){
   try{
-    const res = await fetch(`${KVDB_BASE}/${encodeURIComponent(room)}/${encodeURIComponent(key)}`, {method:'POST', body: JSON.stringify(obj)});
+    const res = await fetch(`${API_BASE}?room=${encodeURIComponent(room)}&key=${encodeURIComponent(key)}`, {method:'POST', body: JSON.stringify(obj)});
     setConnStatus(res.ok);
     return res.ok;
   }catch(e){ setConnStatus(false); return false; }
