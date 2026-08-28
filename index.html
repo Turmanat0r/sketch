@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sketch Showdown</title>
 <meta name="description" content="A free, no-signup party drawing &amp; guessing game. Create a room, share the link, and race to guess what your friends are sketching.">
-<meta name="theme-color" content="#1B1F3B">
+<meta name="theme-color" content="#1b1710">
 <meta name="robots" content="noindex, nofollow">
 <meta property="og:title" content="Sketch Showdown">
 <meta property="og:description" content="Draw a card, sketch it out, race to guess — free party game, no account needed.">
@@ -13,88 +13,96 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%96%8D%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#1B1F3B; --card:#242A52; --card2:#2E356B;
-    --ink:#F4F2FF; --sub:#A7A9D6;
-    --gold:#FFD23F; --coral:#FF4D6D; --mint:#3DDC97; --purple:#8C52FF;
-    --line:rgba(244,242,255,0.12);
+    /* Desert-dusk / military palette — NES-pixel x Metal Slug */
+    --bg:#1b1710; --card:#3c3420; --card2:#4a4128;
+    --ink:#F5EFD6; --sub:#C2B888;
+    --gold:#FFB000; --coral:#E8452C; --mint:#8FBF3F; --purple:#4C6B7A;
+    --line:rgba(245,239,214,0.18);
+    --pixel:'Press Start 2P',cursive;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;font-family:'Nunito',sans-serif;color:var(--ink);
     background:
-      radial-gradient(circle at 15% -10%, #33396b 0%, transparent 50%),
-      radial-gradient(circle at 100% 10%, #3a2a5e 0%, transparent 45%),
-      var(--bg);
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 3px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.06) 0px, rgba(0,0,0,0.06) 1px, transparent 1px, transparent 24px),
+      radial-gradient(circle at 50% 16%, rgba(255,176,0,0.55) 0%, rgba(255,176,0,0) 30%),
+      linear-gradient(180deg, #6b3a1f 0%, #4a2c17 30%, #2b2013 58%, var(--bg) 85%);
     padding:14px;padding-bottom:50px;min-height:100vh;
   }
   .wrap{max-width:520px;margin:0 auto;}
   h1{
-    font-family:'Baloo 2',sans-serif;font-size:26px;text-align:center;
-    color:var(--gold);margin:6px 0 2px 0;
+    font-family:var(--pixel);font-size:17px;text-align:center;line-height:1.5;
+    color:var(--gold);margin:10px 0 8px 0;text-shadow:2px 2px 0 rgba(0,0,0,0.5);
   }
   .tagline{text-align:center;color:var(--sub);font-weight:700;font-size:13px;margin-bottom:16px;}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;}
+  .card{background:var(--card);border:2px solid var(--line);border-radius:6px;padding:16px;margin-bottom:14px;box-shadow:4px 4px 0 rgba(0,0,0,0.35);}
   .btn{
-    display:block;width:100%;padding:14px;border:none;border-radius:12px;
-    font-family:'Baloo 2';font-weight:700;font-size:16px;color:#1B1F3B;
+    display:block;width:100%;padding:14px;border:2px solid rgba(0,0,0,0.35);border-radius:4px;
+    font-family:'Baloo 2';font-weight:700;font-size:16px;color:#241a10;
     background:var(--gold);cursor:pointer;margin-top:8px;
+    box-shadow:0 4px 0 rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.3);
   }
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);}
   .btn.coral{background:var(--coral);color:#fff;}
-  .btn.mint{background:var(--mint);}
+  .btn.mint{background:var(--mint);color:#1c2a0f;}
   .btn.purple{background:var(--purple);color:#fff;}
-  .btn.outline{background:transparent;border:2px solid var(--line);color:var(--ink);}
+  .btn.outline{background:transparent;border:2px solid var(--line);color:var(--ink);box-shadow:none;}
+  .btn.outline:active{box-shadow:none;}
   .btn:disabled{opacity:0.4;}
   input[type=text]{
-    width:100%;padding:12px;border-radius:10px;border:2px solid var(--line);
+    width:100%;padding:12px;border-radius:4px;border:2px solid var(--line);
     background:var(--card2);color:var(--ink);font-weight:700;font-size:16px;
   }
   label{font-size:12px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:0.5px;}
   .room-code{
-    font-family:'Baloo 2';font-size:34px;text-align:center;letter-spacing:6px;
-    color:var(--gold);background:var(--card2);border-radius:12px;padding:10px;margin:8px 0;
+    font-family:var(--pixel);font-size:20px;text-align:center;letter-spacing:4px;
+    color:var(--gold);background:var(--card2);border:2px solid var(--line);border-radius:4px;
+    padding:14px 10px;margin:8px 0;text-shadow:2px 2px 0 rgba(0,0,0,0.4);
   }
   .players{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
   .player-row{
     display:flex;justify-content:space-between;align-items:center;
-    background:var(--card2);border-radius:10px;padding:8px 12px;font-weight:700;
+    background:var(--card2);border:1px solid var(--line);border-radius:4px;padding:8px 12px;font-weight:700;
   }
-  .player-row .score{color:var(--gold);font-family:'Baloo 2';}
+  .player-row .score{color:var(--gold);font-family:var(--pixel);font-size:13px;}
   .player-row.turn{border:2px solid var(--mint);}
   .zicon{
-    width:22px;height:22px;border-radius:5px;object-fit:cover;vertical-align:middle;
-    margin-right:6px;border:1px solid var(--line);image-rendering:pixelated;
+    width:40px;height:40px;border-radius:4px;object-fit:cover;vertical-align:middle;
+    margin-right:8px;border:2px solid var(--line);image-rendering:pixelated;
   }
   .hint{font-size:12.5px;color:var(--sub);line-height:1.5;margin-top:6px;}
   .timer{
-    font-family:'Baloo 2';font-size:22px;text-align:center;color:var(--coral);margin:4px 0;
+    font-family:var(--pixel);font-size:18px;text-align:center;color:var(--coral);margin:6px 0;
+    text-shadow:2px 2px 0 rgba(0,0,0,0.4);
   }
   #drawCanvas{
-    width:100%;aspect-ratio:4/3;background:#fff;border-radius:12px;display:block;
-    touch-action:none;
+    width:100%;aspect-ratio:4/3;background:#fff;border-radius:4px;display:block;
+    border:3px solid var(--card2);touch-action:none;
   }
   .toolrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center;}
   .colordot{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0;}
   .colordot.active{outline:3px solid var(--gold);outline-offset:2px;}
   .word-banner{
-    font-family:'Baloo 2';font-size:20px;text-align:center;background:var(--card2);
-    border-radius:10px;padding:10px;margin-bottom:8px;color:var(--mint);
+    font-family:var(--pixel);font-size:13px;line-height:1.6;text-align:center;background:var(--card2);
+    border:2px solid var(--line);border-radius:4px;padding:12px 10px;margin-bottom:8px;color:var(--mint);
   }
   .deck{display:flex;justify-content:center;margin:14px 0;}
   .deck-card{
-    width:120px;height:170px;border-radius:14px;background:linear-gradient(135deg,var(--purple),var(--coral));
+    width:120px;height:170px;border-radius:6px;background:linear-gradient(135deg,var(--purple),var(--coral));
     display:flex;align-items:center;justify-content:center;font-size:40px;cursor:pointer;
-    box-shadow:4px 4px 0 rgba(0,0,0,0.3);border:none;font-family:inherit;padding:0;
+    box-shadow:4px 4px 0 rgba(0,0,0,0.4);border:2px solid rgba(0,0,0,0.35);font-family:inherit;padding:0;
   }
   .guess-feed{max-height:140px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;margin-top:8px;}
-  .guess-item{font-size:14px;background:var(--card2);border-radius:8px;padding:6px 10px;}
-  .guess-item.correct{background:rgba(61,220,151,0.25);color:var(--mint);font-weight:800;}
+  .guess-item{font-size:14px;background:var(--card2);border-radius:4px;padding:6px 10px;}
+  .guess-item.correct{background:rgba(143,191,63,0.25);color:var(--mint);font-weight:800;}
   .center{text-align:center;}
   .hidden{display:none;}
   #zodiacPreview{margin-bottom:6px;}
-  #lobbyCode.small{font-size:16px;letter-spacing:1px;word-break:break-all;user-select:all;-webkit-user-select:all;}
+  #lobbyCode.small{font-size:14px;letter-spacing:1px;word-break:break-all;user-select:all;-webkit-user-select:all;}
   #copyCodeBtn{margin-top:0;}
   #whoIsDrawing{font-weight:800;}
   #clearCanvasBtn{width:auto;padding:8px 14px;}
