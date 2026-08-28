@@ -13,15 +13,23 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%96%8D%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&family=Press+Start+2P&family=Orbitron:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* Desert-dusk / military palette — NES-pixel x Metal Slug */
+    /* Metal Slug (default) palette — desert-dusk / NES-pixel military theme */
     --bg:#1b1710; --card:#3c3420; --card2:#4a4128;
     --ink:#F5EFD6; --sub:#C2B888;
     --gold:#FFB000; --coral:#E8452C; --mint:#8FBF3F; --purple:#4C6B7A;
     --line:rgba(245,239,214,0.18);
-    --pixel:'Press Start 2P',cursive;
+    --display:'Press Start 2P',cursive;
+  }
+  [data-theme="robocop"]{
+    /* RoboCop / HUD palette — chrome, near-future security aesthetic */
+    --bg:#0a0d12; --card:#161c24; --card2:#1f2830;
+    --ink:#E8F4F8; --sub:#7C93A3;
+    --gold:#00D9FF; --coral:#FF2A2A; --mint:#39FF6A; --purple:#3A5568;
+    --line:rgba(0,217,255,0.24);
+    --display:'Orbitron',sans-serif;
   }
   *{box-sizing:border-box;}
   body{
@@ -33,62 +41,115 @@
       linear-gradient(180deg, #6b3a1f 0%, #4a2c17 30%, #2b2013 58%, var(--bg) 85%);
     padding:14px;padding-bottom:50px;min-height:100vh;
   }
+  [data-theme="robocop"] body{
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.22) 0px, rgba(0,0,0,0.22) 1px, transparent 1px, transparent 3px),
+      repeating-linear-gradient(90deg, rgba(0,217,255,0.05) 0px, rgba(0,217,255,0.05) 1px, transparent 1px, transparent 28px),
+      repeating-linear-gradient(0deg, rgba(0,217,255,0.05) 0px, rgba(0,217,255,0.05) 1px, transparent 1px, transparent 28px),
+      radial-gradient(circle at 50% 0%, rgba(0,217,255,0.22) 0%, rgba(0,217,255,0) 38%),
+      linear-gradient(180deg, #10181f 0%, #0a0d12 55%, #05070a 100%);
+  }
   .wrap{max-width:520px;margin:0 auto;}
+  .theme-row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:10px 16px;background:var(--card);border:2px solid var(--line);
+    border-radius:6px;margin-bottom:14px;
+  }
+  [data-theme="robocop"] .theme-row{border-width:1px;border-radius:3px;}
+  .theme-row label{margin:0;}
+  .theme-row select{
+    background:var(--card2);color:var(--ink);border:2px solid var(--line);border-radius:4px;
+    padding:8px 10px;font-weight:700;font-size:14px;font-family:'Nunito',sans-serif;
+  }
+  [data-theme="robocop"] .theme-row select{border-width:1px;border-radius:3px;}
   h1{
-    font-family:var(--pixel);font-size:17px;text-align:center;line-height:1.5;
+    font-family:var(--display);font-size:17px;text-align:center;line-height:1.5;
     color:var(--gold);margin:10px 0 8px 0;text-shadow:2px 2px 0 rgba(0,0,0,0.5);
   }
-  .tagline{text-align:center;color:var(--sub);font-weight:700;font-size:13px;margin-bottom:16px;}
+  [data-theme="robocop"] h1{
+    font-weight:900;font-size:19px;line-height:1.4;letter-spacing:1px;
+    text-shadow:0 0 10px rgba(0,217,255,0.85), 0 0 2px rgba(0,217,255,0.9);
+  }
+  .tagline{text-align:center;color:var(--sub);font-weight:700;font-size:13px;margin-bottom:16px;letter-spacing:0.3px;}
   .card{background:var(--card);border:2px solid var(--line);border-radius:6px;padding:16px;margin-bottom:14px;box-shadow:4px 4px 0 rgba(0,0,0,0.35);}
+  [data-theme="robocop"] .card{border-width:1px;border-radius:3px;box-shadow:0 0 0 1px rgba(0,217,255,0.12), 0 6px 18px rgba(0,0,0,0.55);}
   .btn{
     display:block;width:100%;padding:14px;border:2px solid rgba(0,0,0,0.35);border-radius:4px;
     font-family:'Baloo 2';font-weight:700;font-size:16px;color:#241a10;
     background:var(--gold);cursor:pointer;margin-top:8px;
     box-shadow:0 4px 0 rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.3);
   }
+  [data-theme="robocop"] .btn{
+    border:1px solid rgba(0,0,0,0.4);border-radius:3px;
+    font-family:var(--display);font-size:14px;letter-spacing:0.5px;color:#04222b;
+    box-shadow:0 0 14px rgba(0,217,255,0.45), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
   .btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);}
+  [data-theme="robocop"] .btn:active{
+    transform:translateY(2px);filter:brightness(0.88);
+    box-shadow:0 0 14px rgba(0,217,255,0.45), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
   .btn.coral{background:var(--coral);color:#fff;}
   .btn.mint{background:var(--mint);color:#1c2a0f;}
   .btn.purple{background:var(--purple);color:#fff;}
+  [data-theme="robocop"] .btn.coral{box-shadow:0 0 14px rgba(255,42,42,0.45), inset 0 1px 0 rgba(255,255,255,0.2);}
+  [data-theme="robocop"] .btn.mint{color:#052b0f;box-shadow:0 0 14px rgba(57,255,106,0.45), inset 0 1px 0 rgba(255,255,255,0.2);}
+  [data-theme="robocop"] .btn.purple{box-shadow:0 0 14px rgba(58,85,104,0.55), inset 0 1px 0 rgba(255,255,255,0.15);}
   .btn.outline{background:transparent;border:2px solid var(--line);color:var(--ink);box-shadow:none;}
+  [data-theme="robocop"] .btn.outline{border-width:1px;}
   .btn.outline:active{box-shadow:none;}
   .btn:disabled{opacity:0.4;}
   input[type=text]{
     width:100%;padding:12px;border-radius:4px;border:2px solid var(--line);
     background:var(--card2);color:var(--ink);font-weight:700;font-size:16px;
   }
+  [data-theme="robocop"] input[type=text]{border-width:1px;border-radius:3px;}
+  input[type=text]:focus,input[type=date]:focus{outline:2px solid var(--gold);outline-offset:1px;}
   label{font-size:12px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:0.5px;}
   .room-code{
-    font-family:var(--pixel);font-size:20px;text-align:center;letter-spacing:4px;
+    font-family:var(--display);font-size:20px;text-align:center;letter-spacing:4px;
     color:var(--gold);background:var(--card2);border:2px solid var(--line);border-radius:4px;
     padding:14px 10px;margin:8px 0;text-shadow:2px 2px 0 rgba(0,0,0,0.4);
+  }
+  [data-theme="robocop"] .room-code{
+    font-weight:800;font-size:22px;letter-spacing:5px;border-width:1px;border-radius:3px;
+    text-shadow:0 0 8px rgba(0,217,255,0.7);
   }
   .players{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
   .player-row{
     display:flex;justify-content:space-between;align-items:center;
     background:var(--card2);border:1px solid var(--line);border-radius:4px;padding:8px 12px;font-weight:700;
   }
-  .player-row .score{color:var(--gold);font-family:var(--pixel);font-size:13px;}
+  [data-theme="robocop"] .player-row{border-radius:3px;}
+  .player-row .score{color:var(--gold);font-family:var(--display);font-size:13px;}
   .player-row.turn{border:2px solid var(--mint);}
+  [data-theme="robocop"] .player-row.turn{box-shadow:0 0 10px rgba(57,255,106,0.5);}
   .zicon{
     width:40px;height:40px;border-radius:4px;object-fit:cover;vertical-align:middle;
     margin-right:8px;border:2px solid var(--line);image-rendering:pixelated;
   }
+  [data-theme="robocop"] .zicon{border-width:1px;border-radius:3px;box-shadow:0 0 6px rgba(0,217,255,0.3);}
   .hint{font-size:12.5px;color:var(--sub);line-height:1.5;margin-top:6px;}
   .timer{
-    font-family:var(--pixel);font-size:18px;text-align:center;color:var(--coral);margin:6px 0;
+    font-family:var(--display);font-size:18px;text-align:center;color:var(--coral);margin:6px 0;
     text-shadow:2px 2px 0 rgba(0,0,0,0.4);
   }
+  [data-theme="robocop"] .timer{font-weight:800;font-size:19px;text-shadow:0 0 10px rgba(255,42,42,0.8);}
   #drawCanvas{
     width:100%;aspect-ratio:4/3;background:#fff;border-radius:4px;display:block;
     border:3px solid var(--card2);touch-action:none;
   }
+  [data-theme="robocop"] #drawCanvas{border-radius:3px;border:2px solid var(--line);}
   .toolrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center;}
   .colordot{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0;}
   .colordot.active{outline:3px solid var(--gold);outline-offset:2px;}
   .word-banner{
-    font-family:var(--pixel);font-size:13px;line-height:1.6;text-align:center;background:var(--card2);
+    font-family:var(--display);font-size:13px;line-height:1.6;text-align:center;background:var(--card2);
     border:2px solid var(--line);border-radius:4px;padding:12px 10px;margin-bottom:8px;color:var(--mint);
+  }
+  [data-theme="robocop"] .word-banner{
+    font-weight:700;font-size:14px;border-width:1px;border-radius:3px;
+    text-shadow:0 0 8px rgba(57,255,106,0.6);
   }
   .deck{display:flex;justify-content:center;margin:14px 0;}
   .deck-card{
@@ -96,9 +157,15 @@
     display:flex;align-items:center;justify-content:center;font-size:40px;cursor:pointer;
     box-shadow:4px 4px 0 rgba(0,0,0,0.4);border:2px solid rgba(0,0,0,0.35);font-family:inherit;padding:0;
   }
+  [data-theme="robocop"] .deck-card{
+    border-radius:4px;border:1px solid rgba(0,0,0,0.4);
+    box-shadow:0 0 24px rgba(255,42,42,0.35), 4px 4px 0 rgba(0,0,0,0.4);
+  }
   .guess-feed{max-height:140px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;margin-top:8px;}
   .guess-item{font-size:14px;background:var(--card2);border-radius:4px;padding:6px 10px;}
+  [data-theme="robocop"] .guess-item{border-radius:3px;}
   .guess-item.correct{background:rgba(143,191,63,0.25);color:var(--mint);font-weight:800;}
+  [data-theme="robocop"] .guess-item.correct{background:rgba(57,255,106,0.2);}
   .center{text-align:center;}
   .hidden{display:none;}
   #zodiacPreview{margin-bottom:6px;}
@@ -113,6 +180,13 @@
   <header>
     <h1>🖍️ SKETCH SHOWDOWN</h1>
     <div class="tagline">Draw a card, sketch it out, race to guess</div>
+    <div class="theme-row">
+      <label for="themeSelect">🎨 Theme</label>
+      <select id="themeSelect">
+        <option value="metalslug">Metal Slug</option>
+        <option value="robocop">RoboCop HUD</option>
+      </select>
+    </div>
   </header>
   <main>
 
@@ -204,6 +278,47 @@
 <script>
 (function(){
 'use strict';
+
+// ============== THEME ==============
+// Purely a per-viewer display preference — not synced through room state.
+// Picked up from (in order) ?theme= in the URL, a saved localStorage
+// choice, then the default. Adding a new theme means adding one more
+// [data-theme="..."] CSS block plus an <option> here — no game logic,
+// HTML structure, or storage layer changes needed.
+const THEMES = ['metalslug', 'robocop'];
+const THEME_COLORS = { metalslug:'#1b1710', robocop:'#0a0d12' };
+
+/**
+ * Applies a theme by name: sets the data-theme attribute CSS keys off of,
+ * updates the mobile browser chrome tint, syncs the picker, and persists
+ * the choice (best-effort — private browsing / blocked storage just means
+ * it won't stick between visits).
+ * @param {string} theme
+ */
+function applyTheme(theme){
+  if(!THEMES.includes(theme)) theme = THEMES[0];
+  document.documentElement.setAttribute('data-theme', theme);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute('content', THEME_COLORS[theme]);
+  const select = document.getElementById('themeSelect');
+  if(select) select.value = theme;
+  try{ localStorage.setItem('sketchShowdownTheme', theme); }catch(e){ /* ignore */ }
+}
+
+(function initTheme(){
+  const params = new URLSearchParams(window.location.search);
+  const fromUrl = params.get('theme');
+  let stored = null;
+  try{ stored = localStorage.getItem('sketchShowdownTheme'); }catch(e){ /* ignore */ }
+  applyTheme(fromUrl || stored || THEMES[0]);
+})();
+
+document.getElementById('themeSelect').addEventListener('change', function(){
+  applyTheme(this.value);
+  const url = new URL(window.location.href);
+  url.searchParams.set('theme', this.value);
+  history.replaceState(null, '', url);
+});
 
 // ============== CONFIG ==============
 const ROUND_MS = 80000;
