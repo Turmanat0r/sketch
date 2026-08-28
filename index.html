@@ -266,11 +266,13 @@
   <!-- LANDING -->
   <div id="screen-landing">
     <div class="card">
-      <label for="nameInput">Your name</label>
-      <input type="text" id="nameInput" name="playerName" placeholder="Enter your name" maxlength="16" autocomplete="given-name">
       <label for="birthdateInput">Your birthdate</label>
       <input type="date" id="birthdateInput" name="birthdate">
       <div class="hint" id="zodiacPreview" aria-live="polite"></div>
+      <label>Your player name</label>
+      <div class="room-code small" id="namePreview" aria-live="polite">Enter your birthdate first</div>
+      <div class="hint">Auto-generated — no real names needed. Don't like it? Roll again.</div>
+      <button type="button" class="btn outline hidden" id="regenNameBtn">🎲 Different name</button>
       <button type="button" class="btn" id="createBtn">🎉 Create a new room</button>
       <button type="button" class="btn outline" id="showJoinBtn" aria-expanded="false" aria-controls="joinBox">🔗 Join a room</button>
       <div id="joinBox" class="hidden" style="margin-top:10px;">
@@ -459,6 +461,51 @@ function zodiacBadgeHtml(sign){
   return `<img class="zicon" src="${icon}" alt="${sign}" title="${sign}">`;
 }
 
+// ============== PLAYER NAME (auto-generated — no real names) ==============
+const NAME_ADJECTIVES = [
+  'Silent','Blazing','Wandering','Crimson','Frost','Golden','Shadow','Wild',
+  'Iron','Lucky','Midnight','Electric','Rogue','Mystic','Rapid','Bold',
+  'Cosmic','Sly','Thunder','Velvet','Neon','Ancient','Solar','Lunar',
+  'Rusty','Grim','Jolly','Feral'
+];
+/**
+ * Deterministically derives a fun, anonymous display name from a birthdate
+ * and its zodiac sign (e.g. "Crimson Scorpio") — same birthdate always
+ * gives the same name, so nobody has to type (or see) a real one.
+ * @param {string} dateStr - value from an <input type="date">
+ * @param {string|null} sign - result of getZodiacSign(dateStr)
+ * @returns {string|null}
+ */
+function generateNameFromBirthdate(dateStr, sign){
+  if(!dateStr || !sign) return null;
+  const [y,m,d] = dateStr.split("-").map(Number);
+  const seed = (y*372 + m*31 + d) >>> 0;
+  return `${NAME_ADJECTIVES[seed % NAME_ADJECTIVES.length]} ${sign}`;
+}
+/**
+ * Picks a fresh random name for the given sign — used by the "Different
+ * name" reroll button, so players who don't like their auto-generated
+ * name (or share a birthdate with someone else in the room) can get a
+ * new one without typing anything.
+ * @param {string} sign
+ * @returns {string}
+ */
+function randomNameForSign(sign){
+  return `${NAME_ADJECTIVES[Math.floor(Math.random()*NAME_ADJECTIVES.length)]} ${sign}`;
+}
+/** Reflects the current `myName` value (or a placeholder) in the landing UI. */
+function renderNamePreview(){
+  const el = document.getElementById('namePreview');
+  const btn = document.getElementById('regenNameBtn');
+  if(myName){
+    el.textContent = myName;
+    btn.classList.remove('hidden');
+  } else {
+    el.textContent = 'Enter your birthdate first';
+    btn.classList.add('hidden');
+  }
+}
+
 // ============== STATE ==============
 let room = '', myName = '', myZodiac = null, myId = Math.random().toString(36).slice(2,10);
 let players = [];
@@ -570,13 +617,20 @@ document.getElementById('showJoinBtn').addEventListener('click', function(){
 document.getElementById('birthdateInput').addEventListener('change', function(){
   const z = getZodiacSign(this.value);
   document.getElementById('zodiacPreview').innerHTML = z ? `Your sign: ${zodiacBadgeHtml(z)} ${z}` : '';
+  myName = generateNameFromBirthdate(this.value, z);
+  renderNamePreview();
+});
+document.getElementById('regenNameBtn').addEventListener('click', function(){
+  const sign = getZodiacSign(document.getElementById('birthdateInput').value);
+  if(!sign) return;
+  myName = randomNameForSign(sign);
+  renderNamePreview();
 });
 document.getElementById('createBtn').addEventListener('click', async ()=>{
-  myName = document.getElementById('nameInput').value.trim();
   const bdate = document.getElementById('birthdateInput').value;
-  if(!myName){ alert('Enter your name first!'); return; }
-  if(!bdate){ alert('Enter your birthdate to generate your character!'); return; }
+  if(!bdate){ alert('Enter your birthdate to generate your player name and character!'); return; }
   myZodiac = getZodiacSign(bdate);
+  if(!myName){ myName = generateNameFromBirthdate(bdate, myZodiac); renderNamePreview(); }
   const btn = document.getElementById('createBtn');
   btn.disabled = true; btn.textContent = 'Creating room...';
   try{
@@ -589,13 +643,12 @@ document.getElementById('createBtn').addEventListener('click', async ()=>{
   btn.disabled = false; btn.textContent = '🎉 Create a new room';
 });
 document.getElementById('joinBtn').addEventListener('click', async function(){
-  myName = document.getElementById('nameInput').value.trim();
   const bdate = document.getElementById('birthdateInput').value;
   const code = document.getElementById('codeInput').value.trim().replace(/[^a-zA-Z0-9_-]/g,'');
-  if(!myName){ alert('Enter your name first!'); return; }
-  if(!bdate){ alert('Enter your birthdate to generate your character!'); return; }
+  if(!bdate){ alert('Enter your birthdate to generate your player name and character!'); return; }
   if(!code){ alert('Paste the room code!'); return; }
   myZodiac = getZodiacSign(bdate);
+  if(!myName){ myName = generateNameFromBirthdate(bdate, myZodiac); renderNamePreview(); }
 
   this.disabled = true;
   const originalLabel = this.textContent;
@@ -1036,7 +1089,7 @@ function prefillRoomFromUrl(){
   document.getElementById('codeInput').value = codeFromUrl;
   document.getElementById('joinBox').classList.remove('hidden');
   document.getElementById('showJoinBtn').setAttribute('aria-expanded', 'true');
-  document.getElementById('nameInput').focus();
+  document.getElementById('birthdateInput').focus();
 }
 prefillRoomFromUrl();
 
