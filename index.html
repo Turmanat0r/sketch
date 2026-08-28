@@ -269,8 +269,10 @@
       <label for="birthdateInput">Your birthdate</label>
       <input type="date" id="birthdateInput" name="birthdate">
       <div class="hint" id="zodiacPreview" aria-live="polite"></div>
+      <label>Your favorite color</label>
+      <div class="toolrow" id="favColorRow" role="group" aria-label="Favorite color"></div>
       <label>Your player name</label>
-      <div class="room-code small" id="namePreview" aria-live="polite">Enter your birthdate first</div>
+      <div class="room-code small" id="namePreview" aria-live="polite">Pick a birthdate and favorite color first</div>
       <div class="hint">Auto-generated — no real names needed. Don't like it? Roll again.</div>
       <button type="button" class="btn outline hidden" id="regenNameBtn">🎲 Different name</button>
       <button type="button" class="btn" id="createBtn">🎉 Create a new room</button>
@@ -462,36 +464,63 @@ function zodiacBadgeHtml(sign){
 }
 
 // ============== PLAYER NAME (auto-generated — no real names) ==============
-const NAME_ADJECTIVES = [
-  'Silent','Blazing','Wandering','Crimson','Frost','Golden','Shadow','Wild',
-  'Iron','Lucky','Midnight','Electric','Rogue','Mystic','Rapid','Bold',
-  'Cosmic','Sly','Thunder','Velvet','Neon','Ancient','Solar','Lunar',
-  'Rusty','Grim','Jolly','Feral'
+// Favorite color picks a themed pool of real celestial body names (stars,
+// planets, moons, comets, nebulae, constellations); birthdate then picks
+// deterministically from within that pool. No adjective+noun mashups —
+// every generated name is an actual astronomical name.
+const FAVORITE_COLORS = [
+  {name:'Red', hex:'#E63946'},
+  {name:'Orange', hex:'#F4A300'},
+  {name:'Yellow', hex:'#FFD400'},
+  {name:'Green', hex:'#2ECC71'},
+  {name:'Blue', hex:'#3FA9F5'},
+  {name:'Purple', hex:'#9B5DE5'},
+  {name:'Pink', hex:'#FF6FB5'},
+  {name:'Black', hex:'#2B2B2B'},
 ];
+const CELESTIAL_NAMES = {
+  Red: ['Mars','Antares','Betelgeuse','Aldebaran','Phobos','Deimos','Scutum','Corvus','Carina','Vesta','Ryugu','Alphard','Zubenelgenubi','Graffias'],
+  Orange: ['Arcturus','Pollux','Titan','Triton','Hygiea','Eros','Ceres','Makemake','Cassiopeia','Perseus','Capella','Miranda','Umbriel','Bennu'],
+  Yellow: ['Procyon','Kepler','Mira','Chara','Denebola','Menkar','Zosma','Regor','Merope','Sadalmelik','Alcyone','Electra','Maia','Taygeta'],
+  Green: ['Uranus','Halley','Encke','Wirtanen','Borrelly','Tempel','Hartley','Holmes','Lovejoy','Neowise','Machholz','Ikeya','Tuttle','Biela'],
+  Blue: ['Neptune','Vega','Rigel','Sirius','Spica','Bellatrix','Alnitak','Alnilam','Mintaka','Achernar','Fomalhaut','Regulus','Altair','Deneb'],
+  Purple: ['Europa','Ganymede','Callisto','Enceladus','Mimas','Iapetus','Dione','Tethys','Rhea','Titania','Oberon','Ariel','Charon','Nereid'],
+  Pink: ['Andromeda','Triangulum','Sombrero','Whirlpool','Pinwheel','Cartwheel','Rosette','Helix','Veil','Eagle','Ring','Butterfly','Owl','Cocoon'],
+  Black: ['Sagittarius','Cygnus','Draco','Hydra','Centaurus','Lyra','Aquila','Phoenix','Pegasus','Orion','Scorpius','Gemini','Leo','Taurus'],
+};
+let favColor = null;
 /**
- * Deterministically derives a fun, anonymous display name from a birthdate
- * and its zodiac sign (e.g. "Crimson Scorpio") — same birthdate always
- * gives the same name, so nobody has to type (or see) a real one.
+ * Deterministically derives a display name from a birthdate + favorite
+ * color — a real celestial body name (e.g. "Vega", "Titan", "Andromeda"),
+ * never a real person's name. Same birthdate + color always gives the
+ * same name.
  * @param {string} dateStr - value from an <input type="date">
- * @param {string|null} sign - result of getZodiacSign(dateStr)
+ * @param {string|null} colorName - one of FAVORITE_COLORS' names
  * @returns {string|null}
  */
-function generateNameFromBirthdate(dateStr, sign){
-  if(!dateStr || !sign) return null;
+function generateNameFromBirthdateAndColor(dateStr, colorName){
+  const list = colorName && CELESTIAL_NAMES[colorName];
+  if(!dateStr || !list) return null;
   const [y,m,d] = dateStr.split("-").map(Number);
   const seed = (y*372 + m*31 + d) >>> 0;
-  return `${NAME_ADJECTIVES[seed % NAME_ADJECTIVES.length]} ${sign}`;
+  return list[seed % list.length];
 }
 /**
- * Picks a fresh random name for the given sign — used by the "Different
- * name" reroll button, so players who don't like their auto-generated
- * name (or share a birthdate with someone else in the room) can get a
- * new one without typing anything.
- * @param {string} sign
- * @returns {string}
+ * Picks a fresh random name from within the chosen color's pool — used by
+ * the "Different name" reroll button.
+ * @param {string} colorName
+ * @returns {string|null}
  */
-function randomNameForSign(sign){
-  return `${NAME_ADJECTIVES[Math.floor(Math.random()*NAME_ADJECTIVES.length)]} ${sign}`;
+function randomCelestialName(colorName){
+  const list = colorName && CELESTIAL_NAMES[colorName];
+  if(!list) return null;
+  return list[Math.floor(Math.random()*list.length)];
+}
+/** Recomputes myName from the current birthdate + favorite color, if both are set. */
+function updateGeneratedName(){
+  const bdate = document.getElementById('birthdateInput').value;
+  myName = generateNameFromBirthdateAndColor(bdate, favColor);
+  renderNamePreview();
 }
 /** Reflects the current `myName` value (or a placeholder) in the landing UI. */
 function renderNamePreview(){
@@ -501,10 +530,34 @@ function renderNamePreview(){
     el.textContent = myName;
     btn.classList.remove('hidden');
   } else {
-    el.textContent = 'Enter your birthdate first';
+    el.textContent = 'Pick a birthdate and favorite color first';
     btn.classList.add('hidden');
   }
 }
+/** Builds the favorite-color swatch picker on the landing screen. */
+function buildFavColorRow(){
+  const row = document.getElementById('favColorRow');
+  FAVORITE_COLORS.forEach(c=>{
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'colordot';
+    dot.style.background = c.hex;
+    dot.setAttribute('aria-label', 'Favorite color ' + c.name);
+    dot.setAttribute('aria-pressed', 'false');
+    dot.addEventListener('click', ()=>{
+      favColor = c.name;
+      document.querySelectorAll('#favColorRow .colordot').forEach(d=>{
+        d.classList.remove('active');
+        d.setAttribute('aria-pressed','false');
+      });
+      dot.classList.add('active');
+      dot.setAttribute('aria-pressed','true');
+      updateGeneratedName();
+    });
+    row.appendChild(dot);
+  });
+}
+buildFavColorRow();
 
 // ============== STATE ==============
 let room = '', myName = '', myZodiac = null, myId = Math.random().toString(36).slice(2,10);
@@ -617,20 +670,19 @@ document.getElementById('showJoinBtn').addEventListener('click', function(){
 document.getElementById('birthdateInput').addEventListener('change', function(){
   const z = getZodiacSign(this.value);
   document.getElementById('zodiacPreview').innerHTML = z ? `Your sign: ${zodiacBadgeHtml(z)} ${z}` : '';
-  myName = generateNameFromBirthdate(this.value, z);
-  renderNamePreview();
+  updateGeneratedName();
 });
 document.getElementById('regenNameBtn').addEventListener('click', function(){
-  const sign = getZodiacSign(document.getElementById('birthdateInput').value);
-  if(!sign) return;
-  myName = randomNameForSign(sign);
+  if(!favColor) return;
+  myName = randomCelestialName(favColor);
   renderNamePreview();
 });
 document.getElementById('createBtn').addEventListener('click', async ()=>{
   const bdate = document.getElementById('birthdateInput').value;
   if(!bdate){ alert('Enter your birthdate to generate your player name and character!'); return; }
+  if(!favColor){ alert('Pick a favorite color to generate your player name!'); return; }
   myZodiac = getZodiacSign(bdate);
-  if(!myName){ myName = generateNameFromBirthdate(bdate, myZodiac); renderNamePreview(); }
+  if(!myName){ myName = generateNameFromBirthdateAndColor(bdate, favColor); renderNamePreview(); }
   const btn = document.getElementById('createBtn');
   btn.disabled = true; btn.textContent = 'Creating room...';
   try{
@@ -646,9 +698,10 @@ document.getElementById('joinBtn').addEventListener('click', async function(){
   const bdate = document.getElementById('birthdateInput').value;
   const code = document.getElementById('codeInput').value.trim().replace(/[^a-zA-Z0-9_-]/g,'');
   if(!bdate){ alert('Enter your birthdate to generate your player name and character!'); return; }
+  if(!favColor){ alert('Pick a favorite color to generate your player name!'); return; }
   if(!code){ alert('Paste the room code!'); return; }
   myZodiac = getZodiacSign(bdate);
-  if(!myName){ myName = generateNameFromBirthdate(bdate, myZodiac); renderNamePreview(); }
+  if(!myName){ myName = generateNameFromBirthdateAndColor(bdate, favColor); renderNamePreview(); }
 
   this.disabled = true;
   const originalLabel = this.textContent;
